@@ -32,8 +32,15 @@ static idt_entry_t idt[256];
 uint32_t exception_handler(registers_t*);
 uint32_t exception_handler(registers_t* regs){
 //   terminal_writestring("Made it inside exception handler\n");
-//    terminal_writestring("uncaught exception: \n");
-//    terminal_putnum(regs->int_no);
+    switch (regs->int_no)
+    {
+            
+      default:
+            break;
+    }
+    terminal_writestring("uncaught exception: ");
+    terminal_putnum(regs->int_no);
+    terminal_putchar('\n');
 //    __asm__ volatile("cli; hlt");
 }
 
@@ -50,16 +57,19 @@ void idt_set_descriptor(uint8_t vector, void* isr, uint8_t flags) {
     descriptor->reserved       = 0;
 }
 
-//extern void* isr_stub_table[];
 extern void* isr_stub_table[]; 
+
 void idt_init(void);
+
 void idt_init() {
-    terminal_initialize();
+    terminal_writestring("IDT ADDRESS: ");
+    terminal_putnum(&idt[0]);
+    terminal_putchar('\n');
     idpt.f = (uintptr_t)&idt[0];
     idpt.limit = (uint16_t)sizeof(idt_entry_t) * 256 - 1;
  
-        idt_set_descriptor(0, isr_stub_table[0], 0x0E);
-    for (uint8_t vector = 1; vector < 32; vector++) {
+//        idt_set_descriptor(0, isr_stub_table[0], 0x0E);
+    for (uint8_t vector = 0; vector < 48; vector++) {
         idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
 //        vectors[vector] = true;
     }

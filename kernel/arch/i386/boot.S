@@ -25,7 +25,6 @@ stack_bottom:
     .skip 16384 # 16 KiB stack size
 stack_top:
 
-
 # The kernel entry point.
 .section .multiboot.text, "a"
 .global _start
@@ -79,20 +78,37 @@ s:
 
 .section .text
 4:
+   #PAGING is now turned ON 
     movl $0, boot_page_directory + 0
-    
     movl %cr3, %ecx
     movl %ecx, %cr3
-    
-    mov $stack_top, %esp
-    mov $stack_top, %ebp
 
+   # lower memory boot or kernel? has been turned off
+   # only access through high memory now    
+
+   #initialize stack pointer
+
+    mov $stack_top, %esp
+   call terminal_initialize
+   push $inistring
+   call terminal_writestring
+   pop %eax
+   #setup GDT
     cld
     call setgdt
 
 reloadSegments:
+    # far jump to reload segment
+    # and start using the GDT
     ljmp  $0x08,$reload_CS
 reload_CS:
+    push $ljstring
+    call terminal_writestring
+    pop %eax
+
+   # NOW USING GDT AND ITS SEGMENTS AND ACCESS
+   # RESTRICTIONS, I THINK
+
     mov $0x10, %ax
     mov %ax, %ds
     mov %ax, %es
@@ -100,18 +116,16 @@ reload_CS:
     mov %ax, %gs
     mov %ax, %ss
 
-	# Call the global constructors.
+    # reinitialize the stack
+    # not sure its needed
+    # but incase accessing
+    # the stack selector will be
+    # different after GDT is set
+
     mov $stack_top, %esp
-    mov $stack_top, %ebp
+	# Call the global constructors.
  	 call _init
-#    cld
-#    call terminal_initialize
-    cld
-    call idt_init
-    cld
-    call pic_check
-    cld
-    call detect_low_mem
+
 	# Transfer control to the main kernel.
 	call kernel_main
 
@@ -120,3 +134,13 @@ reload_CS:
 1:	hlt
 	jmp 1b
 #.size _start, . - _start
+
+.section .rodata
+.align 4
+.global GDT_START
+GDT_START:
+.ascii "GDT set\n\0"
+ljstring:
+.ascii "long jmp from GDT use success!\n\0"
+inistring:
+.ascii "16 KiB stack\nPage Directory 4 KiB\nPages 4 KiB\nPaging enable\n\0"

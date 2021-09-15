@@ -9,8 +9,8 @@
 #define ROWS 25
 #define COLS 80
 
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
+static const size_t VGA_WIDTH = COLS;
+static const size_t VGA_HEIGHT = ROWS;
 static uint16_t* const VGA_MEMORY = (uint16_t*) 0xC03FF000;
  
 static size_t terminal_row;
@@ -60,6 +60,7 @@ void terminal_setcolor(uint8_t color) {
  
 void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
 	const size_t index = y * VGA_WIDTH + x;
+	frame[y][x] = vga_entry(c, color);
 	terminal_buffer[index] = vga_entry(c, color);
 }
  
@@ -100,11 +101,7 @@ void terminal_putchar(char c) {
 	}
 	if (terminal_row == VGA_HEIGHT)
 	{
-		for(line = 1; line <= VGA_HEIGHT - 1; line++)
-		{
-			terminal_scroll(line);
-		}
-		terminal_delete_last_line();
+	    terminal_scroll_down();
 		terminal_row = VGA_HEIGHT - 1;
 	}
 }

@@ -1,3 +1,5 @@
+.section .text
+.global check_a20
 check_a20:
     cli
     xor %ax, %ax
@@ -10,19 +12,19 @@ check_a20:
     mov (%al), %al
     push %ax
     
-    mov byte (%ds:%si), %al
+    movb (%ds:%si), %al
     push %ax
 
-    mov $0x00, byte (%es:%di)
-    mov $0xFF, byte (%ds:%si)
+    movb $0x00, (%es:%di)
+    movb $0xFF, (%ds:%si)
     
-    cmp $0xFF, byte (%es:%di)
-    
-    pop %ax
-    mov %al, byte (%ds:%si)
+    cmpb $0xFF, (%es:%di)
     
     pop %ax
-    mov %al, byte (%es:%di)
+    movb %al, (%ds:%si)
+    
+    pop %ax
+    movb %al, (%es:%di)
     
     mov 0, %ax 
     je check_a20__exit

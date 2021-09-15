@@ -1,18 +1,23 @@
-
 .section .text
 .p2align 4
 .global setGdt
 .global gdttable
 .global gdts
 .type setGdt, @function
-
 setGdt:
+    push %eax
+    push $disablestring
+    call terminal_writestring
+    pop %eax
+    pop %eax
     cli
+    push $loadstring
+    call terminal_writestring
+    pop %eax
     mov 4(%esp), %eax
     lgdt (%eax)
     ret
-    
-    
+
 .section .data
 .p2align 4
 gdttable:
@@ -25,3 +30,9 @@ gdttable:
 gdts:
 .word (. - gdttable)
 
+.section .rodata
+.p2align 4
+disablestring:
+.ascii "temporarily disabling interrupts\n\0"
+loadstring:
+.ascii "loading GDT\n\0"
