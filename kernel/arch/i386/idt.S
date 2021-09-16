@@ -98,21 +98,32 @@ isr_err_stub    30
 isr_no_err_stub 31
 IRQ0_handler:
     cli
+#    pushal
     push %eax
     push %ebx
     
     mov (IRQ0_fractions), %eax
     mov (IRQ0_ms), %ebx
-    add (system_timer_fractions), %eax
-    adc (system_timer_ms), %ebx
+    add %eax, (system_timer_fractions)
+    adc %ebx, (system_timer_ms)
     mov $0x20, %al
     out %al, $0x20
     pop %ebx
     pop %eax
+#    popal
     sti
     iret
 
-isr_no_err_stub 33
+keyboard_handler:
+    cli
+    pushal
+    call handle_kb
+    mov $0x20, %al
+    out %al, $0x20
+
+    popal
+    sti
+    iret
 isr_no_err_stub 34
 isr_no_err_stub 35
 isr_no_err_stub 36
@@ -163,7 +174,7 @@ isr_stub_table:
     .long isr_stub_30
     .long isr_stub_31
     .long IRQ0_handler
-    .long isr_stub_33
+    .long keyboard_handler
     .long isr_stub_34
     .long isr_stub_35
     .long isr_stub_36
@@ -178,18 +189,4 @@ isr_stub_table:
     .long isr_stub_45
     .long isr_stub_46
     .long isr_stub_47
-
-
-.section .data
-.p2align 4
-.global idttable
-.global idts
-idttable:
-  .word 0x0000, 0x0000
-  .byte 0, 0, 0, 0
-  .word 0xffff, 0x0000
-  .byte 0, 0x9a, 0xcf, 0
-  .word 0xffff, 0x0000
-  .byte 0, 0x92, 0xcf, 0
-idts:
-.word (. - idttable - 1)
+    

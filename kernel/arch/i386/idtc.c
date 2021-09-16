@@ -9,9 +9,6 @@ typedef struct regss {
     uint32_t eip, cs, eflags, useresp, ss;
 } __attribute__((packed)) registers_t;
 
-extern uint32_t* idttable;
-extern size_t idts;
-
 typedef struct idtent {
     uint16_t isr_low;
     uint16_t kernel_cs;

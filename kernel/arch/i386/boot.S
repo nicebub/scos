@@ -87,12 +87,10 @@ s:
    # only access through high memory now    
 
    #initialize stack pointer
-
+.extern klog
     mov $stack_top, %esp
    call terminal_initialize
-   push $inistring
-   call terminal_writestring
-   pop %eax
+   call klog_call1
    #setup GDT
     cld
     call setgdt
@@ -102,10 +100,14 @@ reloadSegments:
     # and start using the GDT
     ljmp  $0x08,$reload_CS
 reload_CS:
-    push $ljstring
-    call terminal_writestring
-    pop %eax
-
+   push $1
+   push $ljstring
+   push $5
+   call klog
+#   call terminal_writestring
+   pop %eax
+   pop %eax
+   pop %eax
    # NOW USING GDT AND ITS SEGMENTS AND ACCESS
    # RESTRICTIONS, I THINK
 
@@ -136,7 +138,7 @@ reload_CS:
 #.size _start, . - _start
 
 .section .rodata
-.align 4
+.p2align 4
 .global GDT_START
 GDT_START:
 .ascii "GDT set\n\0"
@@ -144,3 +146,11 @@ ljstring:
 .ascii "long jmp from GDT use success!\n\0"
 inistring:
 .ascii "16 KiB stack\nPage Directory 4 KiB\nPages 4 KiB\nPaging enable\n\0"
+
+.section .data
+.p2align 4
+.global KERNEL_LOG
+.global KERNEL_LOG_END
+KERNEL_LOG:
+    .skip 16384 # 16 KiB log size
+KERNEL_LOG_END:

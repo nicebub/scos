@@ -7,9 +7,9 @@ init_PIT:
  
     # Do some checking
  
-    movl $0x10000, %eax                   #eax = reload value for slowest possible frequency (65536)
-    cmp $18 , %ebx                        #Is the requested frequency too low?
-    jbe .gotReloadValue               # yes, use slowest possible frequency
+    movl $0x10000, %eax                 #eax = reload value for slowest possible frequency (65536)
+    cmp $18 , %ebx                      #Is the requested frequency too low?
+    jbe .gotReloadValue                 # yes, use slowest possible frequency
  
     mov $1, %eax                         #ax = reload value for fastest possible frequency (1)
     cmp $1193181, %ebx                   #Is the requested frequency too high?

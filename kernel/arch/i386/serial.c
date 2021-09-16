@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <kernel/tty.h>
 #include "io.h"
 
 #define PORT 0x3f8          // COM1
@@ -39,11 +41,42 @@ char read_serial() {
 int is_transmit_empty() {
    return inb(PORT + 5) & 0x20;
 }
- 
-void write_serial(char a) {
+
+void serial_putchar(char a) {
    while (is_transmit_empty() == 0);
  
    outb(PORT,a);
 }
+void serial_putnum(int d) {
+    char str[128], *p = &str[0];
+    if (d == 0) {
+	    serial_putchar('0');
+    }
+    else {
+            do{
+                *p++ = (d % 10) + '0';
+                d /= 10;
+            } while(d);
+            p--;
+            while(p != &str[0] - 1)
+	           serial_putchar(*p--);
+    }
+}
 
-
+void serial_write(const char* data, size_t size) {
+	for (size_t i = 0; i < size; i++)
+		serial_putchar(data[i]);
+}
+ 
+void serial_writestring(const char* data) {
+	serial_write(data, strlen(data));
+}
+/*
+void terminal_write_at_pos(const char* data, size_t s, int x, int y){
+    for (size_t i = 0; i < s; i++)
+    	terminal_putentryat(data[i], terminal_color, y+i, x);
+}
+void terminal_writestring_at_pos(const char* data, int x, int y){
+    terminal_write_at_pos(data, strlen(data), x, y);
+}
+*/

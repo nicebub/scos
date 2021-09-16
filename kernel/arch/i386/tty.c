@@ -63,7 +63,7 @@ void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
 	frame[y][x] = vga_entry(c, color);
 	terminal_buffer[index] = vga_entry(c, color);
 }
- 
+ /*
 void terminal_scroll(int line) {
 	size_t *loop;
 	char c;
@@ -73,7 +73,6 @@ void terminal_scroll(int line) {
 		*(loop - (VGA_WIDTH * 2)) = c;
 	}
 }
- 
 void terminal_delete_last_line() {
 	size_t x;
 	int *ptr;
@@ -83,10 +82,9 @@ void terminal_delete_last_line() {
 		*ptr = 0;
 	}
 }
- 
+*/ 
 void terminal_putchar(char c) {
 	size_t line;
-/*	unsigned char uc = c;*/
  
     if (c == '\n') {
         terminal_row++;
@@ -128,5 +126,29 @@ void terminal_write(const char* data, size_t size) {
  
 void terminal_writestring(const char* data) {
 	terminal_write(data, strlen(data));
+}
+
+void terminal_write_at_pos(const char* data, size_t s, int x, int y){
+    for (size_t i = 0; i < s; i++)
+    	terminal_putentryat(data[i], terminal_color, y+i, x);
+}
+void terminal_writestring_at_pos(const char* data, int x, int y){
+    terminal_write_at_pos(data, strlen(data), x, y);
+}
+
+void terminal_putnum_at_pos(int d, int x, int y) {
+    char str[128], *p = &str[0];
+    if (d == 0) {
+	    terminal_putentryat('0', terminal_color, y, x);
+    }
+    else {
+            do{
+                *p++ = (d % 10) + '0';
+                d /= 10;
+            } while(d);
+            p--;
+            while(p != &str[0] - 1)
+        	    terminal_putentryat(*p--, terminal_color, y++, x);
+    }
 }
 
