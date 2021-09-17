@@ -50,11 +50,11 @@ isr_common:
 .global IRQ0_ms
 .global IRQ0_frequency
 .global PIT_reload_value
-system_timer_fractions:  .double 1          # Fractions of 1 ms since timer initialized
-system_timer_ms:         .double 1          # Number of whole ms since timer initialized
-IRQ0_fractions:          .double 1          # Fractions of 1 ms between IRQs
-IRQ0_ms:                 .double 1          # Number of whole ms between IRQs
-IRQ0_frequency:          .double 1          # Actual frequency of PIT
+system_timer_fractions:  .long 1          # Fractions of 1 ms since timer initialized
+system_timer_ms:         .long 1          # Number of whole ms since timer initialized
+IRQ0_fractions:          .long 1          # Fractions of 1 ms between IRQs
+IRQ0_ms:                 .word 1          # Number of whole ms between IRQs
+IRQ0_frequency:          .long 1          # Actual frequency of PIT
 PIT_reload_value:        .word 1          # Current PIT reload value
 
 .section .text
@@ -104,7 +104,7 @@ IRQ0_handler:
     
     mov (IRQ0_fractions), %eax
     mov (IRQ0_ms), %ebx
-    add %eax, (system_timer_fractions)
+    addl %eax, (system_timer_fractions)
     adc %ebx, (system_timer_ms)
     mov $0x20, %al
     out %al, $0x20

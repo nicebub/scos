@@ -100,14 +100,9 @@ reloadSegments:
     # and start using the GDT
     ljmp  $0x08,$reload_CS
 reload_CS:
-   push $1
-   push $ljstring
-   push $5
-   call klog
-#   call terminal_writestring
-   pop %eax
-   pop %eax
-   pop %eax
+
+   call klog_call2
+
    # NOW USING GDT AND ITS SEGMENTS AND ACCESS
    # RESTRICTIONS, I THINK
 
@@ -142,10 +137,6 @@ reload_CS:
 .global GDT_START
 GDT_START:
 .ascii "GDT set\n\0"
-ljstring:
-.ascii "long jmp from GDT use success!\n\0"
-inistring:
-.ascii "16 KiB stack\nPage Directory 4 KiB\nPages 4 KiB\nPaging enable\n\0"
 
 .section .data
 .p2align 4

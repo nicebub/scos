@@ -4,30 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char* levels[] = {
-    "DEBUG",
-    "ERROR",
-    "INFO",
-    "USER",
-    "SYSTEM",
-    "KERN"
-};
-
-enum loglevel{
-    DEBUG = 0,
-    ERROR,
-    INFO,
-    USER,
-    SYSTEM,
-    KERN
-};
-
-enum device {
-    SERIAL = 0,
-    TTY,
-    LOG
-};
-
+#include <kernel/klog.h>
 extern char KERNEL_LOG[];
 extern void *  KERNEL_LOG_END;
 
@@ -68,12 +45,24 @@ int klog(int level, const char* str, int dev) {
     }
     return 1;
 }
-void klog_call1(void) {
-    for(int i = 0; i < 3; i++) {
-        klog(KERN, "16 KiB stack", i);
-        klog(KERN, "Page Directory 4 KiB", i);
-        klog(KERN, "Pages 4 KiB", i);
-        klog(KERN, "Paging enable", i);
-    }
-}
+void klog_all(int level, const char* str) {
+    for(int i = 0; i < 3; i++)
+        klog(level, str, i);
 
+}
+void klog_call1(void) {
+        klog_all(KERN, "16 KiB stack");
+        klog_all(KERN, "Page Directory 4 KiB");
+        klog_all(KERN, "Pages 4 KiB");
+        klog_all(KERN, "Paging enable");
+}
+void klog_call2(void) {
+        klog_all(KERN, "long jmp from GDT use success!");
+}
+void klog_call3(int freq) {
+    klog_all(KERN, "Timer Frequency: ");
+    serial_putnum(1193182/freq);
+    serial_putchar('\n');
+    terminal_putnum(1193182/freq);
+    terminal_putchar('\n');
+}

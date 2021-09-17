@@ -31,7 +31,10 @@ KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 kernel/kernel.o \
 kernel/klog.o \
- 
+kernel/ktime.o \
+kernel/ksleep.o \
+kernel/ktimer.o \
+
 OBJS=\
 $(ARCHDIR)/crti.o \
 $(ARCHDIR)/crtbegin.o \

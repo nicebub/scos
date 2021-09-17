@@ -3,11 +3,14 @@
  .section .text
  .global init_PIT
 init_PIT:
+    push %ebp
+    movl %esp, %ebp
     pushal
  
     # Do some checking
  
     movl $0x10000, %eax                 #eax = reload value for slowest possible frequency (65536)
+    mov 8(%ebp), %ebx
     cmp $18 , %ebx                      #Is the requested frequency too low?
     jbe .gotReloadValue                 # yes, use slowest possible frequency
  
@@ -63,7 +66,7 @@ init_PIT:
  .gotReloadValue:
     push %eax                          #Store reload_value for later
     mov  %ax, (PIT_reload_value)         #Store the reload value for later
-    mov %ax, %bx                       #ebx = reload value
+    mov %eax, %ebx                       #ebx = reload value
  
     mov $3579545, %eax 
     mov $0, %edx                         #edx:eax = 3579545
@@ -102,8 +105,9 @@ init_PIT:
     inc %eax                           # yes, round up
  .l4:
     mov %eax, (IRQ0_frequency)          #Store the actual frequency for displaying later
- 
- 
+    push %eax
+    call klog_call3
+    pop %eax 
  # Calculate the amount of time between IRQs in 32.32 fixed point
  #
  # Note: The basic formula is:
@@ -130,7 +134,7 @@ init_PIT:
     pushf
     cli                               #Disabled interrupts (just in case)
  
-    mov $0x34, %al                   #channel 0, lobyte/hibyte, rate generator
+    mov $0b00110100, %al                   #channel 0, lobyte/hibyte, rate generator
     out %al, $0x43
  
     mov (PIT_reload_value), %ax         #ax = 16 bit reload value
@@ -141,4 +145,5 @@ init_PIT:
     popf
  
     popal
+    pop %ebp
     ret

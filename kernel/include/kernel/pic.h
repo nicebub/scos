@@ -1,5 +1,6 @@
 #ifndef INCLUDE_KERNEL_PIC_H
 #define INCLUDE_KERNEL_PIC_H
+#include <stdint.h>
 
 void PIC_sendEOI(unsigned char irq);
 void PIC_remap(int offset1, int offset2);

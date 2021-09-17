@@ -1,36 +1,27 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <kernel/tty.h>
 #include <kernel/pic.h>
-extern void init_PIT(void);
-extern int init_serial(void);
-extern uint16_t system_timer_fractions;
-extern uint16_t system_timer_ms;
+#include <kernel/ktime.h>
+#include <kernel/ksleep.h>
 
-void print_uptime(void);
+extern  int init_serial(void);
+extern void init_PIT(uint32_t);
+extern void idt_init(void);
+extern void pic_check(void);
+extern void detect_low_mem(void);
+extern void set_keyboard_pic_mask(void);
 
 void kernel_main(void) {
-//    terminal_initialize();
     idt_init();
     pic_check();
-    init_PIT();
+    /* largest divider for slowest timer? */
+    init_PIT(1193);
     init_serial();
     detect_low_mem();
-//    printf("%d\n", check_a20);    
     set_keyboard_pic_mask();
-//    int x = system_timer_fractions + 1000;
+
 	while (1){
-	    print_uptime();
+	    ksleep(54);
+	    ksystem_screen_uptime();
 	}
-//	    while (system_timer_fractions < x);
-//	    x = system_timer_fractions + 1000;
-//	   printf("Hello, kernel World!\n");
-
 }
 
-void print_uptime(){
-    int x = system_timer_fractions, r = system_timer_ms;
-//    int res = x;
-    terminal_writestring_at_pos("system uptime:", 0, 56);
-    terminal_putnum_at_pos(x, 0, 70);
-}
