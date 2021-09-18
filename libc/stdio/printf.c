@@ -62,7 +62,7 @@ static bool printnum(void* d, enum num_type type) {
     }
             break;
         case HEX: {
-            int32_t *data = (int32_t*)d;
+            uint32_t *data = (uint32_t*)d;
             if (*data == 0) {
 	            if (putchar('0') == EOF) 
 			        return false;
@@ -78,7 +78,7 @@ static bool printnum(void* d, enum num_type type) {
                 } while(*data);
                 while(p != &str[0] - 1) {
                     if (*--p > '9')
-                        *p = (*p - '0') - 10 + 'A';
+                        *p = ((*p - '0') - 10) + 'A';
         	        if (putchar(*p) == EOF) 
         		    	return false;
         		}
@@ -178,7 +178,7 @@ int printf(const char* restrict format, ...) {
 			if (!printnum(&d, INT16))
 				return -1;
 			written++;
-		} else if (*format == 'h') {
+		} else if (*format == 'x') {
 			format++;
 			int d = (int) va_arg(parameters, int /* int promotes to int */);
 			if (!maxrem) {

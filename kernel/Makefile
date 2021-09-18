@@ -2,7 +2,7 @@ DEFAULT_HOST!=../default-host.sh
 HOST?=DEFAULT_HOST
 HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
  
-CFLAGS?=-Og -g
+CFLAGS?=-O0 -g
 CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
@@ -34,6 +34,7 @@ kernel/klog.o \
 kernel/ktime.o \
 kernel/ksleep.o \
 kernel/ktimer.o \
+kernel/rtc.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \

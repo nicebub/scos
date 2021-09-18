@@ -9,19 +9,20 @@
 #define ROWS 25
 #define COLS 80
 
-static const size_t VGA_WIDTH = COLS;
-static const size_t VGA_HEIGHT = ROWS;
-static uint16_t* const VGA_MEMORY = (uint16_t*) 0xC03FF000;
+volatile static const size_t VGA_WIDTH = COLS;
+volatile static const size_t VGA_HEIGHT = ROWS;
+volatile static uint16_t* const VGA_MEMORY = (uint16_t*) 0xC03FF000;
  
-static size_t terminal_row;
+volatile static size_t terminal_row;
 static size_t terminal_column;
-static uint8_t terminal_color;
-static uint16_t* terminal_buffer, frame[ROWS][COLS];
+volatile static uint8_t terminal_color;
+volatile static uint16_t* terminal_buffer;
+volatile static uint16_t frame[ROWS][COLS];
 
 void terminal_swap_buffer(void) {
-	for (size_t y = 0; y < VGA_HEIGHT; y++) {
-		for (size_t x = 0; x < VGA_WIDTH; x++) {
-			const size_t index = y * VGA_WIDTH + x;
+	for (volatile size_t y = 0; y < VGA_HEIGHT; y++) {
+		for (volatile size_t x = 0; x < VGA_WIDTH; x++) {
+			volatile const size_t index = y * VGA_WIDTH + x;
 			terminal_buffer[index] = frame[y][x];
 		}
 	}

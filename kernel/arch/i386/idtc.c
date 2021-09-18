@@ -70,9 +70,41 @@ void idt_init() {
         idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
 //        vectors[vector] = true;
     }
+}
+void turn_on_interrupts(void) {
     terminal_writestring("Turning on Interrupts.."); 
     __asm__ volatile ("lidt %0" : : "m"(idpt)); // load the new IDT
     __asm__ volatile ("sti"); // set the interrupt flag
     terminal_writestring("done\n");
+}
+void turn_of_interrupts(void) {
+    terminal_writestring("Turning off Interrupts.."); 
+    __asm__ volatile ("cli"); // set the interrupt flag
+    terminal_writestring("done\n");
+}
+void panic(const char *);
+extern void stack_dump(void);
+void panic(const char * s){
+    printf("%s", s);
+    stack_dump();
+}
+volatile static int nestexc = 0;
+#define MAX_NESTED_EXCEPTIONS 3
+void gpfExcHandler(void) {
+   if (nestexc > MAX_NESTED_EXCEPTIONS) panic("too many nested exceptions!");
+   nestexc++;
+    printf("nesting exceptions!!!\n");
+/*
+ 
+   if (!fix_the_error()) {
+     write_an_error_message();
+   }*/
+   nestexc--;
+   return;
+}
+void dump_hex(char* stack);
+void dump_hex(char* stack){
+    while(stack)
+        terminal_putchar(*stack--);
 }
 

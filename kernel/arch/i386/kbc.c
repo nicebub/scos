@@ -40,21 +40,11 @@ unsigned char kbdus[128] =
     0,	/* F12 Key */
     0,	/* All other keys are undefined */
 };
-void check_keyboard(void);
-
-
-void check_keyboard(void) {
-    unsigned char c;
-    printf("checking keyboard\n");
-    c = inb(0x60);
-    switch (c) {
-    
-    }
-}
 
 void handle_kb(void) {
     unsigned char c;
     c = inb(0x60);
-    printf("found keycod code: %c\n", kbdus[c]);
+//    if (c == 28)
+    printf("%c", kbdus[c]);
     
 }

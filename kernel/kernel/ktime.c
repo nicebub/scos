@@ -20,7 +20,15 @@ void ksystem_screen_uptime(void){
     }
     else
         terminal_putnum_at_pos((r / 600) % 60, 0, 63);
+/*
     terminal_writestring_at_pos(":", 0, 65);
-    terminal_putnum_at_pos(r % 100, 0, 66);
+    if (((r / 10) % 100) <= 9 ) {
+        terminal_putnum_at_pos(0, 0, 66);
+        terminal_putnum_at_pos(r / 10 % 100, 0, 67);
+    }
+    else
+        terminal_putnum_at_pos(r / 10 % 100, 0, 66);
+//	    ksleep(50);
+*/
 }
 

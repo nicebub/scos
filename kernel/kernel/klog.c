@@ -5,13 +5,14 @@
 #include <string.h>
 
 #include <kernel/klog.h>
-extern char KERNEL_LOG[];
-extern void *  KERNEL_LOG_END;
+
+#define LOG_SIZE 4096
+static char KERNEL_LOG[LOG_SIZE];
 
 void write_to_log(const char* level, const char* str){
 
     static char * log = NULL;
-    if (log == NULL || (long unsigned int)((char*)KERNEL_LOG_END  - log - 1) <= (strlen(str) + strlen(level) + 13))
+    if (log == NULL || (&KERNEL_LOG[LOG_SIZE] - log) < (strlen(str) + strlen(level) + 13))
         log = (char*)KERNEL_LOG;
     memcpy(log, "LOG LEVEL ", 10);
     log += 10;

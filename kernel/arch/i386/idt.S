@@ -72,7 +72,36 @@ isr_no_err_stub 9
 isr_err_stub    10
 isr_err_stub    11
 isr_err_stub    12
-isr_err_stub    13
+exc_0d_handler:
+    push %gs
+    mov 0x00, %gs
+    push %eax
+    mov %gs:0xb8000, %eax
+    movw $'D', (%eax)
+    # D in the top-left corner means we're handling
+    #  a GPF exception right ATM.
+ 
+    # your 'normal' handler comes here
+    pushal
+    push %ds
+    push %es
+    mov 0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
+ 
+    call gpfExcHandler
+ 
+    pop %es
+    pop %ds
+    popal
+    mov %gs:0xb8000, %eax
+    movw $'D', (%eax)
+    # the 'D' moved one character to the right, letting
+    # us know that the exception has been handled properly
+    # and that normal operations continues.
+    pop %eax
+    pop %gs
+    iret
 isr_14_handler:
     cli
     push $14
@@ -98,7 +127,7 @@ isr_err_stub    30
 isr_no_err_stub 31
 IRQ0_handler:
     cli
-#    pushal
+    pushal
     push %eax
     push %ebx
     
@@ -106,11 +135,24 @@ IRQ0_handler:
     mov (IRQ0_ms), %ebx
     addl %eax, (system_timer_fractions)
     adc %ebx, (system_timer_ms)
+    push %ds
+    push %es
+    push %fs
+    push %gs
+    mov %esp, %eax
+    push %eax
+    cld
+    call TimerIRQ
+    pop %eax
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
     mov $0x20, %al
     out %al, $0x20
     pop %ebx
     pop %eax
-#    popal
+    popal
     sti
     iret
 
@@ -154,7 +196,7 @@ isr_stub_table:
     .long isr_stub_10
     .long isr_stub_11
     .long isr_stub_12
-    .long isr_stub_13
+    .long exc_0d_handler
     .long isr_14_handler
     .long isr_stub_15
     .long isr_stub_16
@@ -189,4 +231,12 @@ isr_stub_table:
     .long isr_stub_45
     .long isr_stub_46
     .long isr_stub_47
-    
+
+.extern dump_hex
+.global stack_dump
+stack_dump:
+  push %ebp
+  mov %esp, %ebp
+  call dump_hex
+  pop %ebp
+  ret

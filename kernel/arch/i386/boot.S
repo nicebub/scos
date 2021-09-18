@@ -25,7 +25,7 @@ stack_bottom:
     .skip 16384 # 16 KiB stack size
 stack_top:
 
-# The kernel entry point.
+# The kernel entry point....sort of still adjusting bootstrap
 .section .multiboot.text, "a"
 .global _start
 .type _start, @function
@@ -36,8 +36,8 @@ _start:
     movl $1023, %ecx
 
 1:
-    cmpl $_kernel_start, %esi
-    jl 2f
+#    cmpl $_kernel_start, %esi
+#    jl 2f
     cmpl $(_kernel_end - 0xC0000000), %esi
     jge 3f
     movl %esi, %edx
@@ -65,7 +65,7 @@ s:
     
     movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 0
     movl $(boot_page_table1 - 0xC0000000 + 0x003), boot_page_directory - 0xC0000000 + 768 * 4
-    
+#    movl $(0x000100000 + 0x003), boot_page_directory - 0xC0000000 + 5 * 4   
     movl $(boot_page_directory - 0xC0000000), %ecx
     movl %ecx, %cr3
     
@@ -77,8 +77,9 @@ s:
     jmp *%ecx
 
 .section .text
+.extern detect_low_mem
 4:
-   #PAGING is now turned ON 
+   #PAGING is now turned ON
     movl $0, boot_page_directory + 0
     movl %cr3, %ecx
     movl %ecx, %cr3
@@ -88,23 +89,35 @@ s:
 
    #initialize stack pointer
 .extern klog
+initStack:
     mov $stack_top, %esp
+    push %eax
+    add $0xc0000000, %ebx
+    push %ebx
+
+    #initialize terminal and buffer to start outputting messages
+    # to VGA buffer currently if can
    call terminal_initialize
+    # log some initial messages
    call klog_call1
+
    #setup GDT
-    cld
+    cld # may be a System V ABI std to cld before function entry?
     call setgdt
 
 reloadSegments:
     # far jump to reload segment
     # and start using the GDT
-    ljmp  $0x08,$reload_CS
+    ljmp  $0x08,$reload_CS   # 0x08 is the CS for the kernel
 reload_CS:
 
+    #another few logs
+    
    call klog_call2
 
    # NOW USING GDT AND ITS SEGMENTS AND ACCESS
    # RESTRICTIONS, I THINK
+   # reset the selectors
 
     mov $0x10, %ax
     mov %ax, %ds
@@ -119,9 +132,10 @@ reload_CS:
     # the stack selector will be
     # different after GDT is set
 
-    mov $stack_top, %esp
+    mov %esp, %esp
+
 	# Call the global constructors.
- 	 call _init
+# 	 call _init
 
 	# Transfer control to the main kernel.
 	call kernel_main
@@ -137,11 +151,3 @@ reload_CS:
 .global GDT_START
 GDT_START:
 .ascii "GDT set\n\0"
-
-.section .data
-.p2align 4
-.global KERNEL_LOG
-.global KERNEL_LOG_END
-KERNEL_LOG:
-    .skip 16384 # 16 KiB log size
-KERNEL_LOG_END:

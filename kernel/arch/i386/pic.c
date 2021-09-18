@@ -128,7 +128,7 @@ uint16_t pic_get_isr(void)
 inline void check_helper(void);
 inline void check_helper() {
     printf("Checking PIC status\n");
-    printf("PIC IRR: %D\n", pic_get_irr()); 
+    printf("PIC IRR: %D ", pic_get_irr()); 
     printf("PIC ISR: %D\n", pic_get_isr());
 }
 void pic_check(void) {

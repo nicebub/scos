@@ -22,8 +22,8 @@ void setgdt(void) {
     terminal_putnum((uint32_t)&gdttable);
 //    klog_all(KERN, "\n");
     gdpt.f = (uint32_t)&gdttable;
-    klog_all(KERN, "finalize setting GDT\n");
+    klog_all(KERN, "finalize setting GDT...");
     setGdt(&gdpt);
-    klog_all(KERN, "GDT finalized\n");
+    klog_all(KERN, "...\n");
 }
 
