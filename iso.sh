@@ -10,6 +10,7 @@ cp sysroot/boot/scos.kernel isodir/boot/scos.kernel
 cat > isodir/boot/grub/grub.cfg << EOF
 menuentry "scos" {
 	multiboot /boot/scos.kernel
+	set gfxpayload=text
 }
 EOF
 grub-mkrescue -o scos.iso isodir

@@ -5,6 +5,8 @@
 #include <multiboot.h>
 #include <kernel/kmem.h>
 #include <stdio.h>
+#include <kernel/keyboard.h>
+
 extern  int init_serial(void);
 extern void init_PIT(uint32_t);
 extern void turn_on_interrupts(void);
@@ -64,9 +66,11 @@ void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
     printf("TESTING PRINT FUNCTIONS\n");
     printf("%x\n", 8675309);
     init_serial();
+    init_keyboard_buffer();
     set_keyboard_pic_mask();
 	while (1){
-	    ksleep(10);
+//	    ksleep(10);
+        take_keyboard_input();
 	    ksystem_screen_uptime();
 	}
 }

@@ -1,7 +1,24 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "io.h"
-unsigned char kbdus[128] =
+#include <kernel/keyboard.h>
+
+volatile static unsigned char kbbuf[KBUF_SZ];
+volatile static unsigned char* kbbp = &kbbuf[0];
+volatile static unsigned char KEYFLAGS;
+
+enum kb_flags {
+    CONTROL,
+    LEFT_SHIFT,
+    RIGHT_SHIFT,
+    ALT,
+    CAPS,
+    NUM_LOCK,
+    SCROLL_LOCK,
+    
+};
+
+static const unsigned char kbdus[128] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
   '9', '0', '-', '=', '\b',	/* Backspace */
@@ -42,9 +59,33 @@ unsigned char kbdus[128] =
 };
 
 void handle_kb(void) {
-    unsigned char c;
+    volatile unsigned char c;
     c = inb(0x60);
-//    if (c == 28)
-    printf("%c", kbdus[c]);
-    
+//    printf("keyboard test: keycode: %x actual: %c\n", c, kbdus[c]);
+    *kbbp++ = c;
+    if (kbbp > &kbbuf[KBUF_SZ-1])
+        kbbp = &kbbuf[0];
+
+    return;
+}
+void init_keyboard_buffer() {
+    memset(kbbuf, -1, sizeof kbbuf);
+}
+
+unsigned char decode_keypress(unsigned char c) {
+    return kbdus[c];
+}
+
+
+unsigned char get_last_keypress(void) {
+    unsigned char r = *kbbp;
+    *kbbp = -1;
+
+    if (kbbp == &kbbuf[KBUF_SZ-1]) {
+        kbbp = &kbbuf[0];
+    }
+    else {
+        kbbp++;
+    }
+    return r;
 }

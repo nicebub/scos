@@ -1,7 +1,8 @@
 # Declare constants for the multiboot header.
 .set ALIGN,    1<<0             # align loaded modules on page boundaries
 .set MEMINFO,  1<<1             # provide memory map
-.set FLAGS,    ALIGN | MEMINFO  # this is the Multiboot 'flag' field
+.set VMODE,    1<<2             # enable video
+.set FLAGS,    ALIGN | MEMINFO |VMODE # this is the Multiboot 'flag' field
 .set MAGIC,    0x1BADB002       # 'magic number' lets bootloader find the header
 .set CHECKSUM, -(MAGIC + FLAGS) # checksum of above, to prove we are multiboot
 
@@ -11,7 +12,16 @@
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
-
+.long 0
+.long 0
+.long 0
+.long 0
+.long 0
+.long 0 # Set to 0 to enable framebuffer by default, 1 to disable
+.long 640 # Number of horizontal pixels
+.long 480 # Number of vertical pixels
+.long 32 # Bit depth
+# Note that these values do not DICTATE what the bootloader will give us. It will only tell the bootloader what we PREFER.
 .section .bss, "aw", @nobits
     .align 4096
 boot_page_directory:

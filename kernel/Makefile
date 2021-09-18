@@ -35,6 +35,7 @@ kernel/ktime.o \
 kernel/ksleep.o \
 kernel/ktimer.o \
 kernel/rtc.o \
+kernel/kkbd.o \
 
 OBJS=\
 $(ARCHDIR)/crti.o \
