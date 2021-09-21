@@ -14,7 +14,7 @@ isr_stub_\in:
 .endm
 
 .section .text
-
+.extern exception_handler
 isr_common:
     pushal
     push %ds
@@ -43,22 +43,18 @@ isr_common:
     sti
     iret
 
-.section .data
-.global system_timer_fractions
-.global system_timer_ms
-.global IRQ0_fractions
-.global IRQ0_ms
-.global IRQ0_frequency
-.global PIT_reload_value
-system_timer_fractions:  .long 1          # Fractions of 1 ms since timer initialized
-system_timer_ms:         .long 1          # Number of whole ms since timer initialized
-IRQ0_fractions:          .long 1          # Fractions of 1 ms between IRQs
-IRQ0_ms:                 .word 1          # Number of whole ms between IRQs
-IRQ0_frequency:          .long 1          # Actual frequency of PIT
-PIT_reload_value:        .word 1          # Current PIT reload value
 
 .section .text
-.extern exception_handler
+.extern handle_kb
+.extern PIT_reload_value
+.extern IRQ0_ms
+.extern IRQ0_fractions
+.extern IRQ0_frequency
+.extern system_timer_ms
+.extern system_timer_fractions
+.extern gpfExcHandler
+.extern TimerIRQ
+.extern dump_hex
 isr_no_err_stub 0
 isr_no_err_stub 1
 isr_no_err_stub 2
@@ -232,7 +228,6 @@ isr_stub_table:
     .long isr_stub_46
     .long isr_stub_47
 
-.extern dump_hex
 .global stack_dump
 stack_dump:
   push %ebp

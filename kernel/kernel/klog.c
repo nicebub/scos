@@ -44,14 +44,16 @@ void write_to_log(const char* level, const char* str, ...){
 }
 int klog(int level, int dev, const char* str, ...) {
     va_list args;
+    dprintf(dev, "Log level %s:", levels[level]);
+/*    dprintf(dev, levels[level]);
+    dprintf(dev, ": ");*/
+
     va_start(args, str);
-    dprintf(dev, "Log level ");
-    dprintf(dev, levels[level]);
-    dprintf(dev, ": ");
-    dprintf(dev, str);
+    dvprintf(dev, str, args);
+    va_end(args);
+
     get_device(dev).putc('\n');
     
-    va_end(args);
     return 1;
 }
 void klog_all(int level, const char* str, ...) {
@@ -64,21 +66,21 @@ void klog_all(int level, const char* str, ...) {
 }
 void klog_call1(void) {
         klog(KERN, TTY, "16 KiB stack");
-        klog(KERN, TTY, "Page Directory 4 KiB");
-        klog(KERN, TTY, "Pages 4 KiB");
-        klog(KERN, TTY, "Paging enable");
+        klog(KERN, TTY, "Virtual Memory Page Directory 4 KiB");
+        klog(KERN, TTY, "Virtual Memory Pages 4 KiB");
+        klog(KERN, TTY, "Paging enabled");
         klog(KERN, SERIAL, "16 KiB stack");
-        klog(KERN, SERIAL, "Page Directory 4 KiB");
-        klog(KERN, SERIAL, "Pages 4 KiB");
-        klog(KERN, SERIAL, "Paging enable");
+        klog(KERN, SERIAL, "Virtual Memory Page Directory 4 KiB");
+        klog(KERN, SERIAL, "Virtual Memory Pages 4 KiB");
+        klog(KERN, SERIAL, "Paging enabled");
 }
 void klog_call2(void) {
-        klog(KERN, TTY, "long jmp from GDT use success!");
-        klog(KERN, SERIAL, "long jmp from GDT use success!");
+        klog(KERN, TTY, "Long jmp from GDT use success!");
+        klog(KERN, SERIAL, "Long jmp from GDT use success!");
 }
 void klog_call3(int freq) {
-    klog(KERN, TTY, "Timer Frequency: %d", 1193182/freq);
-    klog(KERN, SERIAL, "Timer Frequency: %d", 1193182/freq);
+    klog(KERN, TTY, "Timer Frequency: %D", 1193182/freq);
+    klog(KERN, SERIAL, "Timer Frequency: %D", 1193182/freq);
 /*    serial_putnum(1193182/freq);
     serial_putchar('\n');
     terminal_putnum(1193182/freq);

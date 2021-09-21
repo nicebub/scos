@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <kernel/tty.h>
-
-extern uint32_t system_timer_ms;
+#include <kernel/pit.h>
 
 void ksystem_screen_uptime(void){
     uint32_t r = system_timer_ms;

@@ -3,6 +3,8 @@
 .global setGdt
 .global gdttable
 .global gdts
+.extern disablestring
+.extern loadstring
 .type setGdt, @function
 setGdt:
     push %eax
@@ -34,9 +36,3 @@ gdttable:
 gdts:
 .word (. - gdttable)
 
-.section .rodata
-.p2align 4
-disablestring:
-.ascii "temporarily disabling interrupts\0"
-loadstring:
-.ascii "loading GDT\0"

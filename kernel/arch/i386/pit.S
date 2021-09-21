@@ -59,10 +59,7 @@ init_PIT:
  
  
  # Store the reload value and calculate the actual frequency
- .extern PIT_reload_value
- .extern IRQ0_ms
- .extern IRQ0_fractions
- .extern IRQ0_frequency
+
  .gotReloadValue:
     push %eax                          #Store reload_value for later
     mov  %ax, (PIT_reload_value)         #Store the reload value for later
@@ -147,3 +144,18 @@ init_PIT:
     popal
     pop %ebp
     ret
+
+.section .data
+.global system_timer_fractions
+.global system_timer_ms
+.global IRQ0_fractions
+.global IRQ0_ms
+.global IRQ0_frequency
+.global PIT_reload_value
+system_timer_fractions:  .long 1          # Fractions of 1 ms since timer initialized
+system_timer_ms:         .long 1          # Number of whole ms since timer initialized
+IRQ0_fractions:          .long 1          # Fractions of 1 ms between IRQs
+IRQ0_ms:                 .word 1          # Number of whole ms between IRQs
+IRQ0_frequency:          .long 1          # Actual frequency of PIT
+PIT_reload_value:        .word 1          # Current PIT reload value
+

@@ -1,23 +1,19 @@
+#include <kernel/boot.h>
 #include <kernel/tty.h>
 #include <kernel/pic.h>
 #include <kernel/ktime.h>
 #include <kernel/ksleep.h>
-#include <multiboot.h>
 #include <kernel/kmem.h>
-#include <stdio.h>
 #include <kernel/keyboard.h>
 #include <kernel/ktimer.h>
 #include <kernel/klog.h>
+#include <kernel/serial.h>
+#include <kernel/pit.h>
+#include <multiboot.h>
+#include <kernel/interrupts.h>
+#include <stddef.h>
 
-extern  int init_serial(void);
-extern void init_PIT(uint32_t);
-extern void turn_on_interrupts(void);
-extern void idt_init(void);
-extern void pic_check(void);
-extern void detect_high_mem_e820(void);
-extern void set_keyboard_pic_mask(void);
-extern void panic(const char*);
-extern void* get_physaddr(void*);
+
 extern void _init(void);
 
 void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
@@ -31,7 +27,7 @@ void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
     }
  
     /* Loop through the memory map and display the values */
-    int i;
+    size_t i;
     for(i = 0; i < mbd->mmap_length; 
         i += sizeof(multiboot_memory_map_t)) 
     {
@@ -57,23 +53,23 @@ void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
 	}
 	_init();
     idt_init();
-//    detect_high_mem_e820();
-//    memreport_one();
-//    detect_high_mem_e881();
-//    detect_high_mem_e801();
-//    get_CMOS();
     turn_on_interrupts();
     pic_check();
+
     /* largest divider for slowest timer? */
 
     init_timerblocks();
     init_PIT(9500);
-    get_physaddr(0xc010b8f4);
-    klog_all(KERN, "TESTING PRINT FUNCTIONS");
-    klog_all(KERN, "%x", 8675309);
+
     init_serial();
     init_keyboard_buffer();
     set_keyboard_pic_mask();
+    get_physaddr(0xc010b8f4);
+
+    klog_all(KERN, "TESTING PRINT FUNCTIONS");
+    klog_all(KERN, "%x", 8675309);
+    klog_all(KERN, "%D", 8675309);
+
 	while (1){
 //	    ksleep(10);
         take_keyboard_input();

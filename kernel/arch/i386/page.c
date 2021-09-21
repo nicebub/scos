@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <kernel/klog.h>
+#include <kernel/kmem.h>
 
 static inline void __native_flush_tlb_single(unsigned long addr) {
    asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
@@ -50,9 +51,6 @@ void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
     __native_flush_tlb_single(pt[ptindex]);
 }
 
-//#define memsize 4294967296 // 4GB in bytes or
-#define memsize 1048576 // in Pages
-#define map_size memsize/8
 
 static volatile uint8_t mmap[map_size] = {1};
 static volatile unsigned int mmap_last_alloc = 0;

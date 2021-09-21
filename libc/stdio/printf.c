@@ -97,17 +97,24 @@ static bool dprintnum(int device, void* d, enum num_type type) {
     }
 	return true;
 }
-int dprintf(int device, const char* restrict format, ...);
-
-int printf(const char* restrict format, ...){
+//int dvprintf(int device, const char* restrict format, va_list);
+int dprintf(int device, const char* restrict format, ...){
+    int i;
     va_list params;
     va_start(params, format);
+    i = dvprintf(device, format, params);
     va_end(params);
-    return dprintf(TTY, format, params);
+    return i;
 }
-int dprintf(int device, const char* restrict format, ...) {
-	va_list parameters;
-	va_start(parameters, format);
+int printf(const char* restrict format, ...){
+    int i;
+    va_list params;
+    va_start(params, format);
+    i = dvprintf(TTY, format, params);
+    va_end(params);
+    return i;
+}
+int dvprintf(int device, const char* restrict format, va_list parameters) {
  
 	int written = 0;
  
@@ -218,7 +225,6 @@ int dprintf(int device, const char* restrict format, ...) {
 		}
 	}
  
-	va_end(parameters);
 	return written;
 }
 

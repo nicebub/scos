@@ -44,6 +44,11 @@ stack_top:
 .section .multiboot.text, "a"
 .global _start
 .extern init_devices
+.extern klog_call1
+.extern klog_call2
+.extern setgdt
+.extern terminal_initialize
+.extern kernel_main
 .type _start, @function
 .align 4
 _start:
