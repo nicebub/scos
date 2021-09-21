@@ -7,12 +7,16 @@
 setGdt:
     push %eax
     push $disablestring
-    call terminal_writestring
+    push $0x05
+    call klog_all
+    pop %eax
     pop %eax
     pop %eax
     cli
     push $loadstring
-    call terminal_writestring
+    push $0x05
+    call klog_all
+    pop %eax
     pop %eax
     mov 4(%esp), %eax
     lgdt (%eax)
@@ -33,6 +37,6 @@ gdts:
 .section .rodata
 .p2align 4
 disablestring:
-.ascii "temporarily disabling interrupts\n\0"
+.ascii "temporarily disabling interrupts\0"
 loadstring:
-.ascii "loading GDT\n\0"
+.ascii "loading GDT\0"

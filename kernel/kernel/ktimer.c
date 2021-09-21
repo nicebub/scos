@@ -5,8 +5,8 @@
 
 #define COUNTDOWN_DONE_MSG 1
 
-volatile static uint32_t timersused = 0;
-volatile static struct TimerBlock timerblocks[20];
+static volatile uint32_t timersused = 0;
+static volatile struct TimerBlock timerblocks[20];
  
 void init_timerblocks(void) {
     for (int i = 0; i < 20; i++) {

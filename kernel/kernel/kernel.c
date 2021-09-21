@@ -6,6 +6,8 @@
 #include <kernel/kmem.h>
 #include <stdio.h>
 #include <kernel/keyboard.h>
+#include <kernel/ktimer.h>
+#include <kernel/klog.h>
 
 extern  int init_serial(void);
 extern void init_PIT(uint32_t);
@@ -15,6 +17,8 @@ extern void pic_check(void);
 extern void detect_high_mem_e820(void);
 extern void set_keyboard_pic_mask(void);
 extern void panic(const char*);
+extern void* get_physaddr(void*);
+extern void _init(void);
 
 void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
     if(magic != MULTIBOOT_BOOTLOADER_MAGIC) {
@@ -34,7 +38,8 @@ void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
         multiboot_memory_map_t* mmmt = 
             (multiboot_memory_map_t*) (mbd->mmap_addr + i + 0xc0000000);
  
-        printf("Start Addr High:Low:%x:%x|Length High:Low:%x:%x|Size:%x|Type:%d\n",
+        klog_all(KERN, "Start Addr High:Low:|Length High:Low:|Size:|Type:");
+        klog_all(KERN, "%x:%x   %x:%x   %x  %x",
             mmmt->addr_high, mmmt->addr_low, mmmt->len_high, mmmt->len_low, mmmt->size, mmmt->type);
  
         if(mmmt->type == MULTIBOOT_MEMORY_AVAILABLE) {
@@ -63,8 +68,9 @@ void kernel_main(multiboot_info_t* mbd, unsigned int magic) {
 
     init_timerblocks();
     init_PIT(9500);
-    printf("TESTING PRINT FUNCTIONS\n");
-    printf("%x\n", 8675309);
+    get_physaddr(0xc010b8f4);
+    klog_all(KERN, "TESTING PRINT FUNCTIONS");
+    klog_all(KERN, "%x", 8675309);
     init_serial();
     init_keyboard_buffer();
     set_keyboard_pic_mask();

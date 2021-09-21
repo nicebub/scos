@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "io.h"
 #include <kernel/keyboard.h>
 
-volatile static unsigned char kbbuf[KBUF_SZ];
-volatile static unsigned char* kbbp = &kbbuf[0];
-volatile static unsigned char KEYFLAGS;
+static volatile unsigned char kbbuf[KBUF_SZ];
+static volatile unsigned char* kbbp = &kbbuf[0];
+static volatile unsigned char KEYFLAGS;
 
 enum kb_flags {
     CONTROL,

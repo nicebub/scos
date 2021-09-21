@@ -1,7 +1,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <kernel/tty.h>
-
+#include <kernel/klog.h>
+#include <kernel/serial.h>
 typedef struct regss {
     uint32_t gs, fs, es, ds;
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
@@ -35,9 +36,11 @@ uint32_t exception_handler(registers_t* regs){
       default:
             break;
     }
-    terminal_writestring("uncaught exception: ");
-    terminal_putnum(regs->int_no);
-    terminal_putchar('\n');
+    klog_all(KERN, "uncaught exception: ");
+    serial_putd(regs->int_no);
+    serial_putc('\n');
+    terminal_putd(regs->int_no);
+    terminal_putc('\n');
 //    __asm__ volatile("cli; hlt");
 }
 
@@ -59,9 +62,12 @@ extern void* isr_stub_table[];
 void idt_init(void);
 
 void idt_init() {
-    terminal_writestring("IDT ADDRESS: ");
-    terminal_putnum(&idt[0]);
-    terminal_putchar('\n');
+    klog_all(KERN, "IDT Address: %d", (int)(unsigned int)&idt[0]);
+  
+/*    terminal_putd((int)(unsigned int)&idt[0]);
+    terminal_putc('\n');
+    serial_putd((int)(unsigned int)&idt[0]);
+    serial_putc('\n');*/
     idpt.f = (uintptr_t)&idt[0];
     idpt.limit = (uint16_t)sizeof(idt_entry_t) * 256 - 1;
  
@@ -72,28 +78,26 @@ void idt_init() {
     }
 }
 void turn_on_interrupts(void) {
-    terminal_writestring("Turning on Interrupts.."); 
+    klog_all(KERN, "Enabling Interrupts..");
     __asm__ volatile ("lidt %0" : : "m"(idpt)); // load the new IDT
     __asm__ volatile ("sti"); // set the interrupt flag
-    terminal_writestring("done\n");
 }
 void turn_of_interrupts(void) {
-    terminal_writestring("Turning off Interrupts.."); 
+    klog_all(KERN, "Disabling Interrupts.."); 
     __asm__ volatile ("cli"); // set the interrupt flag
-    terminal_writestring("done\n");
 }
 void panic(const char *);
 extern void stack_dump(void);
 void panic(const char * s){
-    printf("%s", s);
+    klog_all(KERN,"%s", s);
     stack_dump();
 }
-volatile static int nestexc = 0;
+static volatile int nestexc = 0;
 #define MAX_NESTED_EXCEPTIONS 3
 void gpfExcHandler(void) {
    if (nestexc > MAX_NESTED_EXCEPTIONS) panic("too many nested exceptions!");
    nestexc++;
-    printf("nesting exceptions!!!\n");
+    klog_all(KERN, "nesting exceptions!!!");
 /*
  
    if (!fix_the_error()) {
@@ -105,6 +109,6 @@ void gpfExcHandler(void) {
 void dump_hex(char* stack);
 void dump_hex(char* stack){
     while(stack)
-        terminal_putchar(*stack--);
+        terminal_putc(*stack--);
 }
 

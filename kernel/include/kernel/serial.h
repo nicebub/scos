@@ -2,10 +2,10 @@
 #define INCLUDE_KERNEL_SERIAL_H
 #include <stddef.h>
 
-void serial_putchar(char a);
-void serial_putnum(int d);
+int serial_putc(int a);
+int serial_putd(int d);
 void serial_write(const char* data, size_t size);
-void serial_writestring(const char* data);
+int serial_puts(const char* data);
 
 #endif
 

@@ -10,9 +10,12 @@ extern "C" {
 #endif
  
 int printf(const char* __restrict, ...);
-int putchar(int);
+int dprintf(int device, const char* __restrict, ...);
+int putc(int);
+int dputc(int dev, int);
 int puts(const char*);
- 
+int dputs(int dev, const char *);
+
 #ifdef __cplusplus
 }
 #endif

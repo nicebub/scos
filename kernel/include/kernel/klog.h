@@ -1,7 +1,9 @@
 #ifndef INCLUDE_KERNEL_KLOG_H
 #define INCLUDE_KERNEL_KLOG_H
 
-static const char* levels[] = {
+#include <kernel/devices.h>
+
+static volatile const char* levels[] = {
     "DEBUG",
     "ERROR",
     "INFO",
@@ -19,19 +21,12 @@ enum loglevel{
     SYSTEM,
     KERN,
 };
-static const char* devices[] = {
-    "SERIAL",
-    "TTY",
-    "LOG",
-    NULL
-};
+int klog_putc(int c);
+int klog_putd(int c);
+int klog_puts(const char * s);
 
-enum device {
-    SERIAL = 0,
-    TTY,
-    LOG,
-};
-
-int klog(int level, const char* str, int device );
+int klog(int level, int device, const char* fmt, ...);
+void write_to_log(const char* level, const char* ftm, ...);
+void klog_all(int level, const char* fmt, ...);
 
 #endif /* INCLUDE_KERNEL_KLOG_H */

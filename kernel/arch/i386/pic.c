@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <stdio.h>
 #include "io.h"
 #include <kernel/pic.h>
+#include <kernel/klog.h>
 
 #define PIC1		                0x20		/* IO base address for master PIC */
 #define PIC2		                0xA0		/* IO base address for slave PIC */
@@ -127,16 +127,16 @@ uint16_t pic_get_isr(void)
 }
 inline void check_helper(void);
 inline void check_helper() {
-    printf("Checking PIC status\n");
-    printf("PIC IRR: %D ", pic_get_irr()); 
-    printf("PIC ISR: %D\n", pic_get_isr());
+    klog_all(KERN, "Checking PIC status");
+    klog_all(KERN, "PIC IRR: %D ", pic_get_irr()); 
+    klog_all(KERN, "PIC ISR: %D", pic_get_isr());
 }
 void pic_check(void) {
 /* current %D is supposed to be uint16_t */
     check_helper();
-    printf("Remapping PICs to: PIC1: 0x20, PIC2: 0x28\n");
+    klog_all(KERN, "Remapping PICs to: PIC1: 0x20, PIC2: 0x28");
     PIC_remap(0x20, 0x28);
-    printf("Checking PIC status after remap\n");
+    klog_all(KERN, "Checking PIC status after remap");
     check_helper();
 //    PIC_sendEOI(8);
 //    PIC_sendEOI(7);

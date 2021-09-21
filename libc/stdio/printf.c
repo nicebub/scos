@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
- 
+#include <kernel/klog.h>
+
+
 enum num_type {
     UINT16 = 0,
     INT16,
@@ -12,22 +14,27 @@ enum num_type {
     INT32,
     HEX
 };
-static bool print(const char* data, size_t length) {
+static bool print(int device, const char* data, size_t length) {
 	const unsigned char* bytes = (const unsigned char*) data;
 	for (size_t i = 0; i < length; i++)
-		if (putchar(bytes[i]) == EOF)
+		if (get_device(device).putc(bytes[i]) == EOF)
 			return false;
 	return true;
 }
+static bool dprintnum(int device, void* d, enum num_type type);
 
 static bool printnum(void* d, enum num_type type) {
+    return dprintnum(TTY, d, type);
+}
+
+static bool dprintnum(int device, void* d, enum num_type type) {
     char str[128], *p = &str[0];
     switch (type) {
         case UINT16:
         case INT16: {
             int16_t *data = (int16_t*)d;
             if (*data == 0) {
-	            if (putchar('0') == EOF) 
+	            if (get_device(device).putc('0') == EOF) 
 			        return false;
            }
            else {
@@ -37,7 +44,7 @@ static bool printnum(void* d, enum num_type type) {
             } while(*data);
             p--;
             while(p != &str[0] - 1)
-	            if (putchar(*p--) == EOF) 
+	            if (get_device(device).putc(*p--) == EOF) 
 		    	    return false;
             }
         }
@@ -47,7 +54,7 @@ static bool printnum(void* d, enum num_type type) {
         {
     int32_t *data = (int32_t*)d;
     if (*data == 0) {
-	    if (putchar('0') == EOF) 
+	    if (get_device(device).putc('0') == EOF) 
 			return false;
     }
     else {
@@ -56,7 +63,7 @@ static bool printnum(void* d, enum num_type type) {
          *data /= 10;
          } while(*data);
         while(p != &str[0] - 1)
-	        if (putchar(*--p) == EOF) 
+	        if (get_device(device).putc(*--p) == EOF) 
 		    	return false;
     }
     }
@@ -64,11 +71,11 @@ static bool printnum(void* d, enum num_type type) {
         case HEX: {
             uint32_t *data = (uint32_t*)d;
             if (*data == 0) {
-	            if (putchar('0') == EOF) 
+	            if (get_device(device).putc('0') == EOF) 
 			        return false;
-	            if (putchar('x') == EOF) 
+	            if (get_device(device).putc('x') == EOF) 
 			        return false;
-        	    if (putchar('0') == EOF) 
+        	    if (get_device(device).putc('0') == EOF) 
 		        	return false;
             }
             else {
@@ -77,10 +84,12 @@ static bool printnum(void* d, enum num_type type) {
                     *data /= 16;
                 } while(*data);
                 while(p != &str[0] - 1) {
-                    if (*--p > '9')
+                    if (*--p > '9') {
                         *p = ((*p - '0') - 10) + 'A';
-        	        if (putchar(*p) == EOF) 
+                    }
+        	        if (get_device(device).putc(*p) == EOF) {
         		    	return false;
+        		    }
         		}
             }
           }
@@ -88,8 +97,15 @@ static bool printnum(void* d, enum num_type type) {
     }
 	return true;
 }
+int dprintf(int device, const char* restrict format, ...);
 
-int printf(const char* restrict format, ...) {
+int printf(const char* restrict format, ...){
+    va_list params;
+    va_start(params, format);
+    va_end(params);
+    return dprintf(TTY, format, params);
+}
+int dprintf(int device, const char* restrict format, ...) {
 	va_list parameters;
 	va_start(parameters, format);
  
@@ -108,7 +124,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!print(format, amount))
+			if (!print(device, format, amount))
 				return -1;
 			format += amount;
 			written += amount;
@@ -124,7 +140,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!print(&c, sizeof(c)))
+			if (!print(device, &c, sizeof(c)))
 				return -1;
 			written++;
 		} else if (*format == 's') {
@@ -135,7 +151,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!print(str, len))
+			if (!print(device, str, len))
 				return -1;
 			written += len;
 		} else if (*format == 'L') {
@@ -145,7 +161,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!printnum(&d, UINT32))
+			if (!dprintnum(device, &d, UINT32))
 				return -1;
 			written++;
 		} else if (*format == 'D') {
@@ -155,7 +171,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!printnum(&d, UINT16))
+			if (!dprintnum(device, &d, UINT16))
 				return -1;
 			written++;
 		} else if (*format == 'l') {
@@ -165,7 +181,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!printnum(&d, INT32))
+			if (!dprintnum(device, &d, INT32))
 				return -1;
 			written++;
 		} else if (*format == 'd') {
@@ -175,7 +191,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!printnum(&d, INT16))
+			if (!dprintnum(device, &d, INT16))
 				return -1;
 			written++;
 		} else if (*format == 'x') {
@@ -185,7 +201,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!printnum(&d, HEX))
+			if (!dprintnum(device, &d, HEX))
 				return -1;
 			written++;
 		} else {
@@ -195,7 +211,7 @@ int printf(const char* restrict format, ...) {
 				// TODO: Set errno to EOVERFLOW.
 				return -1;
 			}
-			if (!print(format, len))
+			if (!print(device, format, len))
 				return -1;
 			written += len;
 			format += len;

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <kernel/tty.h>
 #include "io.h"
 
@@ -42,15 +43,16 @@ int is_transmit_empty() {
    return inb(PORT + 5) & 0x20;
 }
 
-void serial_putchar(char a) {
+int serial_putc(int a) {
    while (is_transmit_empty() == 0);
  
-   outb(PORT,a);
+   outb(PORT, a);
+   return a;
 }
-void serial_putnum(int d) {
+int serial_putd(int d) {
     char str[128], *p = &str[0];
     if (d == 0) {
-	    serial_putchar('0');
+	    serial_putc('0');
     }
     else {
             do{
@@ -59,24 +61,18 @@ void serial_putnum(int d) {
             } while(d);
             p--;
             while(p != &str[0] - 1)
-	           serial_putchar(*p--);
+	           serial_putc(*p--);
     }
+    return d;
 }
 
 void serial_write(const char* data, size_t size) {
 	for (size_t i = 0; i < size; i++)
-		serial_putchar(data[i]);
+		serial_putc(data[i]);
 }
  
-void serial_writestring(const char* data) {
+int serial_puts(const char* data) {
 	serial_write(data, strlen(data));
+	return 1;
 }
-/*
-void terminal_write_at_pos(const char* data, size_t s, int x, int y){
-    for (size_t i = 0; i < s; i++)
-    	terminal_putentryat(data[i], terminal_color, y+i, x);
-}
-void terminal_writestring_at_pos(const char* data, int x, int y){
-    terminal_write_at_pos(data, strlen(data), x, y);
-}
-*/
+

@@ -9,15 +9,15 @@
 #define ROWS 25
 #define COLS 80
 
-volatile static const size_t VGA_WIDTH = COLS;
-volatile static const size_t VGA_HEIGHT = ROWS;
-volatile static uint16_t* const VGA_MEMORY = (uint16_t*) 0xC03FF000;
- 
-volatile static size_t terminal_row;
-static size_t terminal_column;
-volatile static uint8_t terminal_color;
-volatile static uint16_t* terminal_buffer;
-volatile static uint16_t frame[ROWS][COLS];
+static volatile const size_t VGA_WIDTH = COLS;
+static volatile const size_t VGA_HEIGHT = ROWS;
+static volatile uint16_t* const VGA_MEMORY = (uint16_t*) 0xC03FF000;
+static volatile uint16_t* const EARLY_VGA_MEMORY = (uint16_t*) 0x0B8000;
+static volatile size_t terminal_row;
+static volatile size_t terminal_column;
+static volatile uint8_t terminal_color;
+static volatile uint16_t* terminal_buffer;
+static volatile uint16_t frame[ROWS][COLS];
 
 void terminal_swap_buffer(void) {
 	for (volatile size_t y = 0; y < VGA_HEIGHT; y++) {
@@ -27,6 +27,24 @@ void terminal_swap_buffer(void) {
 		}
 	}
 }
+void terminal_remap(void){
+    terminal_buffer = VGA_MEMORY;
+}
+void terminal_noremap_init(void)
+{
+	terminal_row = 0;
+	terminal_column = 0;
+	terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+	terminal_buffer = (uint16_t*) EARLY_VGA_MEMORY;
+	
+	for (size_t y = 0; y < VGA_HEIGHT; y++) {
+		for (size_t x = 0; x < VGA_WIDTH; x++) {
+			frame[y][x] = vga_entry(' ', terminal_color);
+		}
+	}
+	terminal_swap_buffer();
+}
+
 void terminal_initialize(void) 
 {
 	terminal_row = 0;
@@ -84,8 +102,8 @@ void terminal_delete_last_line() {
 	}
 }
 */ 
-void terminal_putchar(char c) {
-	size_t line;
+int terminal_putc(int c) {
+/*	size_t line;*/
  
     if (c == '\n') {
         terminal_row++;
@@ -103,11 +121,12 @@ void terminal_putchar(char c) {
 	    terminal_scroll_down();
 		terminal_row = VGA_HEIGHT - 1;
 	}
+	return c;
 }
-void terminal_putnum(int d) {
+int terminal_putd(int d) {
     char str[128], *p = &str[0];
     if (d == 0) {
-	    terminal_putchar('0');
+	    terminal_putc('0');
     }
     else {
             do{
@@ -116,17 +135,19 @@ void terminal_putnum(int d) {
             } while(d);
             p--;
             while(p != &str[0] - 1)
-	           terminal_putchar(*p--);
+	           terminal_putc(*p--);
     }
+    return d;
 }
  
 void terminal_write(const char* data, size_t size) {
 	for (size_t i = 0; i < size; i++)
-		terminal_putchar(data[i]);
+		terminal_putc(data[i]);
 }
  
-void terminal_writestring(const char* data) {
+int terminal_puts(const char* data) {
 	terminal_write(data, strlen(data));
+	return 1;
 }
 
 void terminal_write_at_pos(const char* data, size_t s, int x, int y){
